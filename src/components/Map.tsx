@@ -1,48 +1,43 @@
-import { useEffect, useState } from 'react';
-import ReactMapGL, { FullscreenControl } from 'react-map-gl';
+import React from 'react';
+import DeckGL from '@deck.gl/react';
+import {StaticMap, GeolocateControl} from 'react-map-gl';
 
-type Viewport = {
-  width: string;
-  height: string;
+type View = {
   latitude: number;
   longitude: number;
   zoom: number;
+  pitch: number;
+  bearing: number;
 }
 
-const fullscreenControlStyle= {
+const INITIAL_VIEW_STATE: View = {
+  longitude: -122.41669,
+  latitude: 37.7853,
+  zoom: 13,
+  pitch: 0,
+  bearing: 0
+};
+
+const geolocateControlStyle= {
   right: 10,
   top: 10
 };
 
 function Map() {
-  const [viewport, setViewport] = useState<Viewport>({
-    width: "100vw",
-    height: "100vh",
-    latitude: 14.5353954,
-    longitude: 121.0674113,
-    zoom: 15
-  });
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.watchPosition((position) => {
-        setViewport({
-          ...viewport,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        })
-      });
-    }
-  })
-  
   return (
-    <ReactMapGL
-      {...viewport}
-      mapStyle="mapbox://styles/mapbox/outdoors-v11"
-      onViewportChange={(nextViewport: Viewport) => setViewport(nextViewport)}
+    <DeckGL
+      initialViewState={INITIAL_VIEW_STATE}
+      controller={true}
     >
-      <FullscreenControl style={fullscreenControlStyle} />
-    </ReactMapGL>
+      <StaticMap mapStyle="mapbox://styles/mapbox/outdoors-v11">
+        <GeolocateControl
+          style={geolocateControlStyle}
+          positionOptions={{enableHighAccuracy: true}}
+          trackUserLocation={true}
+          auto
+        />
+      </StaticMap>
+    </DeckGL>
   );
 }
 
