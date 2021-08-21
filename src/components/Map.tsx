@@ -11,9 +11,9 @@ type View = {
 };
 
 const INITIAL_VIEW_STATE: View = {
-  longitude: -122.41669,
-  latitude: 37.7853,
-  zoom: 13,
+  longitude: 121.41669,
+  latitude: 14.7853,
+  zoom: 7,
   pitch: 0,
   bearing: 0,
 };
