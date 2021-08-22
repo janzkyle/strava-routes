@@ -1,5 +1,7 @@
 import DeckGL from "@deck.gl/react";
+import { useEffect } from "react";
 import { StaticMap, GeolocateControl } from "react-map-gl";
+import { stravaAPI } from "../api";
 
 type View = {
   latitude: number;
@@ -23,6 +25,14 @@ const geolocateControlStyle = {
 };
 
 function Map() {
+  useEffect(() => {
+    (async function fetchActivities() {
+      const activities = await stravaAPI.get("/athlete/activities");
+
+      console.log("activities", activities);
+    })();
+  }, []);
+
   return (
     <DeckGL initialViewState={INITIAL_VIEW_STATE} controller={true}>
       <StaticMap mapStyle="mapbox://styles/mapbox/outdoors-v11">
