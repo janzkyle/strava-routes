@@ -1,8 +1,8 @@
-import React from "react";
-import Map from "./components/Map";
+import {} from "./components/Map";
+import Login from "./pages/Login";
 
 function App() {
-  return <Map />;
+  return <Login />;
 }
 
 export default App;
