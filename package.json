@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@craco/craco": "^6.2.0",
     "@danmarshall/deckgl-typings": "^4.9.3",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
@@ -21,14 +22,17 @@
     "web-vitals": "^1.0.1"
   },
   "devDependencies": {
+    "autoprefixer": "^9",
     "husky": ">=6",
     "lint-staged": ">=10",
-    "prettier": "^2.3.2"
+    "postcss": "^7",
+    "prettier": "^2.3.2",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "eject": "react-scripts eject",
     "prepare": "husky install",
     "format": "prettier --write src/**/*.{js,jsx,ts,tsx}"

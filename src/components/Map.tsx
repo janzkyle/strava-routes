@@ -1,4 +1,3 @@
-import React from "react";
 import DeckGL from "@deck.gl/react";
 import { StaticMap, GeolocateControl } from "react-map-gl";
 
