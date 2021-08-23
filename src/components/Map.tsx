@@ -1,7 +1,10 @@
 import DeckGL from "@deck.gl/react";
-import { useEffect } from "react";
-import { StaticMap, GeolocateControl } from "react-map-gl";
+import { PathLayer, PathLayerProps } from "@deck.gl/layers";
+import { useEffect, useState } from "react";
+import { StaticMap } from "react-map-gl";
 import { stravaAPI } from "../api";
+import polyline from "@mapbox/polyline";
+import { RGBAColor } from "@deck.gl/core";
 
 type View = {
   latitude: number;
@@ -11,40 +14,70 @@ type View = {
   bearing: number;
 };
 
+type Activity = {
+  name: string;
+  map: {
+    summary_polyline: string;
+  };
+};
+
+type PathData = {
+  path: [number, number][];
+  name: string;
+  color: RGBAColor;
+};
+
 const INITIAL_VIEW_STATE: View = {
-  longitude: 121.41669,
-  latitude: 14.7853,
-  zoom: 7,
+  longitude: 121.06741,
+  latitude: 14.53533,
+  zoom: 10,
   pitch: 0,
   bearing: 0,
 };
 
-const geolocateControlStyle = {
-  right: 10,
-  top: 10,
-};
+function reverseCoordsOrder(coordsList: [number, number][]) {
+  return coordsList.map((coords) => coords.slice().reverse());
+}
 
 function Map() {
+  const [layer, setLayer] =
+    useState<PathLayer<PathData, PathLayerProps<PathData>>>();
+
   useEffect(() => {
     (async function fetchActivities() {
       const activities = await stravaAPI.get("/athlete/activities");
 
-      console.log("activities", activities);
+      const pathData = activities.data.map((activity: Activity) => ({
+        name: activity.name,
+        path: reverseCoordsOrder(
+          polyline.decode(activity.map.summary_polyline)
+        ),
+        color: [255, 0, 0],
+      }));
+
+      const layer = new PathLayer({
+        id: "path-layer",
+        data: pathData,
+        pickable: true,
+        widthMinPixels: 3,
+        getPath: (d) => d.path,
+        getColor: (d) => d.color,
+        getWidth: 5,
+      });
+
+      setLayer(layer);
     })();
   }, []);
 
-  return (
-    <DeckGL initialViewState={INITIAL_VIEW_STATE} controller={true}>
-      <StaticMap mapStyle="mapbox://styles/mapbox/outdoors-v11">
-        <GeolocateControl
-          style={geolocateControlStyle}
-          positionOptions={{ enableHighAccuracy: true }}
-          trackUserLocation={true}
-          auto
-        />
-      </StaticMap>
+  return layer ? (
+    <DeckGL
+      initialViewState={INITIAL_VIEW_STATE}
+      layers={[layer]}
+      controller={true}
+    >
+      <StaticMap mapStyle="mapbox://styles/mapbox/outdoors-v11" />
     </DeckGL>
-  );
+  ) : null;
 }
 
 export default Map;
