@@ -39,6 +39,14 @@ function reverseCoordsOrder(coordsList: [number, number][]) {
   return coordsList.map((coords) => coords.slice().reverse());
 }
 
+function generateRandomRGB() {
+  return [
+    Math.floor(Math.random() * 256),
+    Math.floor(Math.random() * 256),
+    Math.floor(Math.random() * 256),
+  ];
+}
+
 function Map() {
   const [layer, setLayer] =
     useState<PathLayer<PathData, PathLayerProps<PathData>>>();
@@ -52,7 +60,7 @@ function Map() {
         path: reverseCoordsOrder(
           polyline.decode(activity.map.summary_polyline)
         ),
-        color: [255, 0, 0],
+        color: generateRandomRGB(),
       }));
 
       const layer = new PathLayer({
@@ -75,7 +83,7 @@ function Map() {
       layers={[layer]}
       controller={true}
     >
-      <StaticMap mapStyle="mapbox://styles/mapbox/outdoors-v11" />
+      <StaticMap mapStyle="mapbox://styles/mapbox/light-v10" />
     </DeckGL>
   ) : null;
 }
