@@ -5,6 +5,7 @@ import { StaticMap } from "react-map-gl";
 import { stravaAPI } from "../api";
 import polyline from "@mapbox/polyline";
 import { RGBAColor } from "@deck.gl/core";
+import { Position } from "deck.gl";
 
 type View = {
   latitude: number;
@@ -19,10 +20,11 @@ type Activity = {
   map: {
     summary_polyline: string;
   };
+  type: string;
 };
 
 type PathData = {
-  path: [number, number][];
+  path: number[][];
   name: string;
   color: RGBAColor;
 };
@@ -35,11 +37,11 @@ const INITIAL_VIEW_STATE: View = {
   bearing: 0,
 };
 
-function reverseCoordsOrder(coordsList: [number, number][]) {
+function reverseCoordsOrder(coordsList: Position[]) {
   return coordsList.map((coords) => coords.slice().reverse());
 }
 
-function generateRandomRGB() {
+function generateRandomRGB(): RGBAColor {
   return [
     Math.floor(Math.random() * 256),
     Math.floor(Math.random() * 256),
@@ -55,13 +57,22 @@ function Map() {
     (async function fetchActivities() {
       const activities = await stravaAPI.get("/athlete/activities");
 
-      const pathData = activities.data.map((activity: Activity) => ({
-        name: activity.name,
-        path: reverseCoordsOrder(
-          polyline.decode(activity.map.summary_polyline)
-        ),
-        color: generateRandomRGB(),
-      }));
+      const pathData = activities.data.reduce(
+        (acc: PathData[], activity: Activity) => {
+          if (activity.type === "Ride" && activity.map.summary_polyline) {
+            acc.push({
+              name: activity.name,
+              path: reverseCoordsOrder(
+                polyline.decode(activity.map.summary_polyline)
+              ),
+              color: generateRandomRGB(),
+            });
+          }
+
+          return acc;
+        },
+        []
+      );
 
       const layer = new PathLayer({
         id: "path-layer",
