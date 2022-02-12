@@ -35,7 +35,9 @@ function App() {
           "Authorization"
         ] = `Bearer ${tokens.data.access_token}`;
 
-        setCookie("access_token", tokens.data.access_token);
+        setCookie("access_token", tokens.data.access_token, {
+          expires: new Date(tokens.data.expires_at * 1000),
+        });
         setIsAuthenticated(true);
       })();
     }
