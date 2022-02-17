@@ -37,7 +37,7 @@ function App() {
 
         const expires = new Date(tokens.data.expires_at * 1000);
         setCookie("access_token", tokens.data.access_token, { expires });
-        setCookie("username", tokens.data.athlete.username, { expires });
+        setCookie("id", tokens.data.athlete.id, { expires });
         setIsAuthenticated(true);
       })();
     }

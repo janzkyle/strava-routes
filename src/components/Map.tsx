@@ -61,15 +61,15 @@ function Map() {
   useEffect(() => {
     (async function fetchActivities() {
       let activitiesData;
-      const userRef = doc(db, "users", cookies["username"]);
+      const userRef = doc(db, "users", cookies["id"]);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
         activitiesData = userSnap.data().activities;
       } else {
         const activities = await stravaAPI.get("/athlete/activities");
-        await setDoc(doc(db, "users", cookies["username"]), {
-          username: cookies["username"],
+        await setDoc(doc(db, "users", cookies["id"]), {
+          id: cookies["id"],
           activities: activities.data,
         });
 
