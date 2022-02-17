@@ -1,5 +1,7 @@
+/* eslint-disable no-unused-vars */
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB-heAkqXWT22uWI-AGDtdCEC-4NY4eSJQ",
@@ -12,5 +14,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-// eslint-disable-next-line no-unused-vars
 const analytics = getAnalytics(app);
+
+export const db = getFirestore();

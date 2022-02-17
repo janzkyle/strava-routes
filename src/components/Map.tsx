@@ -6,6 +6,9 @@ import { stravaAPI } from "../api";
 import polyline from "@mapbox/polyline";
 import { RGBAColor } from "@deck.gl/core";
 import { Position } from "deck.gl";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../firebase";
+import { useCookies } from "react-cookie";
 
 type View = {
   latitude: number;
@@ -53,11 +56,27 @@ function Map() {
   const [layer, setLayer] =
     useState<PathLayer<PathData, PathLayerProps<PathData>>>();
 
+  const [cookies] = useCookies();
+
   useEffect(() => {
     (async function fetchActivities() {
-      const activities = await stravaAPI.get("/athlete/activities");
+      let activitiesData;
+      const userRef = doc(db, "users", cookies["username"]);
+      const userSnap = await getDoc(userRef);
 
-      const pathData = activities.data.reduce(
+      if (userSnap.exists()) {
+        activitiesData = userSnap.data().activities;
+      } else {
+        const activities = await stravaAPI.get("/athlete/activities");
+        await setDoc(doc(db, "users", cookies["username"]), {
+          username: cookies["username"],
+          activities: activities.data,
+        });
+
+        activitiesData = activities.data;
+      }
+
+      const pathData = activitiesData.reduce(
         (acc: PathData[], activity: Activity) => {
           if (activity.type === "Ride" && activity.map.summary_polyline) {
             acc.push({
@@ -86,7 +105,7 @@ function Map() {
 
       setLayer(layer);
     })();
-  }, []);
+  }, [cookies]);
 
   return layer ? (
     <DeckGL
