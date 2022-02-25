@@ -101,6 +101,7 @@ function Map() {
         getPath: (d) => d.path,
         getColor: (d) => d.color,
         getWidth: 5,
+        opacity: 0.1,
       });
 
       setLayer(layer);
