@@ -9,6 +9,7 @@ import { Position } from "deck.gl";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useCookies } from "react-cookie";
+import { SEGMENTS_DATA } from '../data';
 
 type View = {
   latitude: number;
@@ -26,8 +27,16 @@ type Activity = {
   type: string;
 };
 
+type Segment = {
+  name: string;
+  map: {
+    polyline: string;
+  };
+  effort_count: number;
+}
+
 type PathData = {
-  path: number[][];
+  path: Position[];
   name: string;
   color: RGBAColor;
 };
@@ -40,8 +49,24 @@ const INITIAL_VIEW_STATE: View = {
   bearing: 0,
 };
 
+const bounds = [14.533967, 121.051289, 14.623777, 121.110896]
+const path = [[bounds[1], bounds[0]], [bounds[1], bounds[2]], [bounds[3], bounds[0]], [bounds[3], bounds[0]], [bounds[1], bounds[0]]];
+
+const box = new PathLayer({
+  id: "path-layer",
+  data: [{
+    name: "bound",
+    path: [[bounds[1], bounds[0]], [bounds[1], bounds[2]], [bounds[3], bounds[2]], [bounds[3], bounds[0]], [bounds[1], bounds[0]]],
+  }],
+  pickable: true,
+  widthMinPixels: 3,
+  getPath: (d) => [[bounds[1], bounds[0]], [bounds[1], bounds[2]], [bounds[3], bounds[2]], [bounds[3], bounds[0]], [bounds[1], bounds[0]]],
+  getWidth: 5,
+  opacity: 0.5,
+});
+
 function reverseCoordsOrder(coordsList: Position[]) {
-  return coordsList.map((coords) => coords.slice().reverse());
+  return coordsList.map((coords): [number,number] => [coords[1], coords[0]]);
 }
 
 function generateRandomRGB(): RGBAColor {
@@ -60,29 +85,31 @@ function Map() {
 
   useEffect(() => {
     (async function fetchActivities() {
-      let activitiesData;
-      const userRef = doc(db, "users", cookies["id"]);
-      const userSnap = await getDoc(userRef);
+      // let activitiesData;
+      // const userRef = doc(db, "users", cookies["id"]);
+      // const userSnap = await getDoc(userRef);
 
-      if (userSnap.exists()) {
-        activitiesData = userSnap.data().activities;
-      } else {
-        const activities = await stravaAPI.get("/athlete/activities");
-        await setDoc(doc(db, "users", cookies["id"]), {
-          id: cookies["id"],
-          activities: activities.data,
-        });
+      // if (userSnap.exists()) {
+      //   activitiesData = userSnap.data().activities;
+      // } else {
+      //   const activities = await stravaAPI.get("/athlete/activities");
+      //   await setDoc(doc(db, "users", cookies["id"]), {
+      //     id: cookies["id"],
+      //     activities: activities.data,
+      //   });
 
-        activitiesData = activities.data;
-      }
+      //   activitiesData = activities.data;
+      // }
 
-      const pathData = activitiesData.reduce(
-        (acc: PathData[], activity: Activity) => {
-          if (activity.type === "Ride" && activity.map.summary_polyline) {
+      const segmentsData = SEGMENTS_DATA;
+
+      const pathData = segmentsData.reduce(
+        (acc: PathData[], activity: Segment) => {
+          if (activity.map.polyline) {
             acc.push({
               name: activity.name,
               path: reverseCoordsOrder(
-                polyline.decode(activity.map.summary_polyline)
+                polyline.decode(activity.map.polyline)
               ),
               color: generateRandomRGB(),
             });
@@ -101,7 +128,7 @@ function Map() {
         getPath: (d) => d.path,
         getColor: (d) => d.color,
         getWidth: 5,
-        opacity: 0.1,
+        opacity: 0.5,
       });
 
       setLayer(layer);
@@ -111,7 +138,7 @@ function Map() {
   return layer ? (
     <DeckGL
       initialViewState={INITIAL_VIEW_STATE}
-      layers={[layer]}
+      layers={[layer, box]}
       controller={true}
     >
       <StaticMap mapStyle="mapbox://styles/mapbox/light-v10" />
