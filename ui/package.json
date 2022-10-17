@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^9",
-    "husky": ">=6",
+    "husky": "^8.0.0",
     "lint-staged": ">=10",
     "postcss": "^7",
     "prettier": "^2.3.2",
@@ -41,7 +41,7 @@
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject",
-    "prepare": "husky install",
+    "prepare": "cd .. && husky install ui/.husky",
     "format": "prettier --write src/**/*.{js,jsx,ts,tsx}",
     "deploy": "firebase deploy"
   },
