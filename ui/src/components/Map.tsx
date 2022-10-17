@@ -40,6 +40,17 @@ const INITIAL_VIEW_STATE: View = {
   bearing: 0,
 };
 
+async function getAthleteActivities(page: number): Promise<[]> {
+  const activities = await stravaAPI.get("/athlete/activities", { params: {page}});
+  const activitiesData = activities.data;
+
+  if (activitiesData.length > 0) {
+    return activitiesData.concat(await getAthleteActivities(page + 1));
+  } else {
+    return activitiesData;
+  }
+}
+
 function reverseCoordsOrder(coordsList: Position[]) {
   return coordsList.map((coords) => coords.slice().reverse());
 }
@@ -67,13 +78,12 @@ function Map() {
       if (userSnap.exists()) {
         activitiesData = userSnap.data().activities;
       } else {
-        const activities = await stravaAPI.get("/athlete/activities");
+        activitiesData = await getAthleteActivities(1);
+        
         await setDoc(doc(db, "users", cookies["id"]), {
           id: cookies["id"],
-          activities: activities.data,
+          activities: activitiesData,
         });
-
-        activitiesData = activities.data;
       }
 
       const pathData = activitiesData.reduce(
@@ -101,7 +111,7 @@ function Map() {
         getPath: (d) => d.path,
         getColor: (d) => d.color,
         getWidth: 5,
-        opacity: 0.1,
+        opacity: 0.3,
       });
 
       setLayer(layer);
